@@ -28,14 +28,16 @@ server.post('/api/messages', connector.listen());
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
 
-var tableName = 'botdata';
-var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+//var tableName = 'botdata';
+//var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+//var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+
+var inMemoryStorage = new builder.MemoryBotStorage();
 
 // Create your bot with a function to receive messages from the user
 var bot = new builder.UniversalBot(connector);
-bot.set('storage', tableStorage);
+bot.set('storage', inMemoryStorage);
 
 bot.dialog('/', function (session) {
-    session.send('You said LOCAL 2: ' + session.message.text);
+    session.send('You said LOCAL 3: ' + session.message.text);
 });
