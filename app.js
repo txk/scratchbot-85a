@@ -62,7 +62,7 @@ bot.dialog('/', function (session) {
                                     'items': [
                                         {
                                             'type': 'Image',
-                                            'url': 'https://placeholdit.imgix.net/~text?txtsize=65&txt=Adaptive+Cards&w=300&h=300',
+                                            'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/Quiggles-CS.PNG',
                                             'size': 'medium',
                                             'style': 'person'
                                         }
