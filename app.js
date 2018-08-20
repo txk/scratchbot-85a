@@ -51,7 +51,7 @@ bot.dialog('/', function (session) {
             'body': [
                 {
                     'type': 'Container',
-                    'speak': '<s>Hello!</s><s>Are you looking for a flight or a hotel?</s>',
+                    'speak': '<s>Hello!</s><s>I am Quiggly and can help you find you personalized health tests. Want to you want to do?</s>',
                     'items': [
                         {
                             'type': 'ColumnSet',
@@ -80,7 +80,7 @@ bot.dialog('/', function (session) {
                                         },
                                         {
                                             'type': 'TextBlock',
-                                            'text': 'Are you looking for a flight or a hotel?',
+                                            'text': 'Are you looking for a Quest location or a Lab Test?',
                                             'wrap': true
                                         }
                                     ]
@@ -94,8 +94,8 @@ bot.dialog('/', function (session) {
                 // Hotels Search form
                 {
                     'type': 'Action.ShowCard',
-                    'title': 'Hotels',
-                    'speak': '<s>Hotels</s>',
+                    'title': 'Quest location',
+                    'speak': '<s>Quest location</s>',
                     'card': {
                         'type': 'AdaptiveCard',
                         'body': [
@@ -152,8 +152,8 @@ bot.dialog('/', function (session) {
                 },
                 {
                     'type': 'Action.ShowCard',
-                    'title': 'Flights',
-                    'speak': '<s>Flights</s>',
+                    'title': 'Lab Tests',
+                    'speak': '<s>Lab Tests</s>',
                     'card': {
                         'type': 'AdaptiveCard',
                         'body': [
