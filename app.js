@@ -6,6 +6,7 @@ var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 var https = require('https');
+var _ = require('lodash');
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -24,6 +25,8 @@ var connector = new builder.ChatConnector({
 server.post('/api/messages', connector.listen());
 
 __hack_resp = undefined;
+
+__hack = {};
 
 /*----------------------------------------------------------------------------------------
 * Bot Storage: This is a great spot to register the private state storage for your bot. 
@@ -50,169 +53,7 @@ bot.dialog('/', function (session) {
     }
     //session.send('You said LOCAL 3: ' + session.message.text);
 
-    // Display Welcome card with Hotels and Flights search options
-    // var card = {
-    //     'contentType': 'application/vnd.microsoft.card.adaptive',
-    //     'content': {
-    //         '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-    //         'type': 'AdaptiveCard',
-    //         'version': '1.0',
-    //         'body': [
-    //             {
-    //                 'type': 'Container',
-    //                 'speak': '<s>Hello!</s><s>I am Quiggly and can help you find you personalized health tests. Want to you want to do?</s>',
-    //                 'items': [
-    //                     {
-    //                         'type': 'ColumnSet',
-    //                         'columns': [
-    //                             {
-    //                                 'type': 'Column',
-    //                                 'size': 'auto',
-    //                                 'items': [
-    //                                     {
-    //                                         'type': 'Image',
-    //                                         'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/Quiggles-CS.PNG',
-    //                                         'size': 'medium',
-    //                                         'style': 'person'
-    //                                     }
-    //                                 ]
-    //                             },
-    //                             {
-    //                                 'type': 'Column',
-    //                                 'size': 'stretch',
-    //                                 'items': [
-    //                                     {
-    //                                         'type': 'TextBlock',
-    //                                         'text': 'Hello!',
-    //                                         'weight': 'bolder',
-    //                                         'isSubtle': true
-    //                                     },
-    //                                     {
-    //                                         'type': 'TextBlock',
-    //                                         'text': 'Are you looking for a Quest location or a Lab Test?',
-    //                                         'wrap': true
-    //                                     }
-    //                                 ]
-    //                             }
-    //                         ]
-    //                     },
-    //                     {
-    //                         'type': 'ColumnSet',
-    //                         'columns': [
-    //                             {
-    //                                 'type': 'Column',
-    //                                 'size': 'auto',
-    //                                 'items': [
-    //                                     {
-    //                                         'type': 'Image',
-    //                                         'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/Quiggles-CS.PNG',
-    //                                         'size': 'medium',
-    //                                         'style': 'person'
-    //                                     }
-    //                                 ]
-    //                             },
-    //                             {
-    //                                 'type': 'Column',
-    //                                 'size': 'stretch',
-    //                                 'items': [
-    //                                     {
-    //                                         'type': 'TextBlock',
-    //                                         'text': 'Hello!',
-    //                                         'weight': 'bolder',
-    //                                         'isSubtle': true
-    //                                     },
-    //                                     {
-    //                                         'type': 'TextBlock',
-    //                                         'text': 'Are you looking for a Quest location or a Lab Test?',
-    //                                         'wrap': true
-    //                                     }
-    //                                 ]
-    //                             }
-    //                         ]
-    //                     }
-
-    //                 ]
-    //             }
-    //         ],
-    //         'actions': [
-    //             // Hotels Search form
-    //             {
-    //                 'type': 'Action.ShowCard',
-    //                 'title': 'Quest location',
-    //                 'speak': '<s>Quest location</s>',
-    //                 'card': {
-    //                     'type': 'AdaptiveCard',
-    //                     'body': [
-    //                         {
-    //                             'type': 'TextBlock',
-    //                             'text': 'Welcome to the Hotels finder!',
-    //                             'speak': '<s>Welcome to the Hotels finder!</s>',
-    //                             'weight': 'bolder',
-    //                             'size': 'large'
-    //                         },
-    //                         {
-    //                             'type': 'TextBlock',
-    //                             'text': 'Please enter your destination:'
-    //                         },
-    //                         {
-    //                             'type': 'Input.Text',
-    //                             'id': 'destination',
-    //                             'speak': '<s>Please enter your destination</s>',
-    //                             'placeholder': 'Miami, Florida',
-    //                             'style': 'text'
-    //                         },
-    //                         {
-    //                             'type': 'TextBlock',
-    //                             'text': 'When do you want to check in?'
-    //                         },
-    //                         {
-    //                             'type': 'Input.Date',
-    //                             'id': 'checkin',
-    //                             'speak': '<s>When do you want to check in?</s>'
-    //                         },
-    //                         {
-    //                             'type': 'TextBlock',
-    //                             'text': 'How many nights do you want to stay?'
-    //                         },
-    //                         {
-    //                             'type': 'Input.Number',
-    //                             'id': 'nights',
-    //                             'min': 1,
-    //                             'max': 60,
-    //                             'speak': '<s>How many nights do you want to stay?</s>'
-    //                         }
-    //                     ],
-    //                     'actions': [
-    //                         {
-    //                             'type': 'Action.Submit',
-    //                             'title': 'Search',
-    //                             'speak': '<s>Search</s>',
-    //                             'data': {
-    //                                 'type': 'hotelSearch'
-    //                             }
-    //                         }
-    //                     ]
-    //                 }
-    //             },
-    //             {
-    //                 'type': 'Action.ShowCard',
-    //                 'title': 'Lab Tests',
-    //                 'speak': '<s>Lab Tests</s>',
-    //                 'card': {
-    //                     'type': 'AdaptiveCard',
-    //                     'body': [
-    //                         {
-    //                             'type': 'TextBlock',
-    //                             'text': 'Flights is not implemented =(',
-    //                             'speak': '<s>Flights is not implemented</s>',
-    //                             'weight': 'bolder'
-    //                         }
-    //                     ]
-    //                 }
-    //             }
-    //         ]
-    //     }
-    // };
+    
     var card = greeting_card();
 
     var msg = new builder.Message(session)
@@ -222,9 +63,14 @@ bot.dialog('/', function (session) {
 
 function processSubmitAction(session, value) {
     var defaultErrorMessage = 'Please complete all the search parameters';
+    console.log("processSubmitAction " + value.type);
     switch (value.type) {
         case 'medicalDataSearch':
             session.beginDialog('/data-waiting-card', value);
+            break;
+
+        case 'wantToLearnMore':
+            session.beginDialog('/want-to-learn-more-card', value);
             break;
 
         default:
@@ -234,18 +80,51 @@ function processSubmitAction(session, value) {
 }
 
 bot.dialog('/data-received', function (session) {       
-    session.send("Received patient data: " + JSON.stringify(__hack_resp));
+    session.send("Received patient data");
+    session.send("hack.num: " + __hack.num);
+    session.send("hack.body: " + __hack.body);
+    session.endDialog();
 });
 
 bot.dialog('/data-waiting', function (session) {       
     session.send("Waiting for your upload ... " + __hack.num);
     session.send(__hack.body);
+    session.endDialog();
 });
 
 bot.dialog('/data-waiting-card', function (session) {  
-    var card =  createHeroCard(session);
+
+    // generate random name
+    var num = Math.floor(Math.random() * Math.floor(1000));
+    var lastName = "Smith" + num;
+
+    
+    var card =  createHeroCard(session, lastName);
     var msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
+    //session.endDialog();
+
+    msg = "Waiting until you have posted a patient record with lastName '" + lastName + "' to the /ai/api/patient/health/v1/info endpoint";
+    session.send(msg);
+
+    // query cortana
+    __hack.intervalId = setInterval(queryCortana, 2000, lastName);
+
+});
+
+bot.dialog('/cortana-result', function (session) {  
+    var card =  createResultCard(session);
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+    session.endDialog();
+
+});
+
+bot.dialog('/want-to-learn-more-card', function (session) {  
+    var card =  wantToLearnMoreCard(session);
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+    session.endDialog();
 });
 
 function createAnimationCard(session) {
@@ -282,14 +161,75 @@ function createAdaptiveCard(session) {
    return card;
 }
 
-function createHeroCard(session) {
+function createHeroCard(session, lastName) {
     return new builder.HeroCard(session)
-        .title('Quiggles')
         .images([
             builder.CardImage.create(session, 'https://teama1storage.blob.core.windows.net/scratchbot-85a/light_progress2.gif')
         ]);
 }
 
+
+function wantToLearnMoreCard(session) {
+
+    var card = {
+        'contentType': 'application/vnd.microsoft.card.adaptive',
+        'content': {
+            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+            'type': 'AdaptiveCard',
+            'version': '1.0',
+            'body': [
+                {
+                    'type': 'TextBlock',
+                    'text': 'Great',
+                    'size': 'large'
+                },
+                {
+                    'type': 'TextBlock',
+                    'text': 'It gets better from here',
+                    'weight': 'bolder'
+                },
+                {
+                    'type': 'TextBlock',
+                    'text': 'If you allow me to query the medical data associated with your account, I can match your profile data against our vast data repository ...',
+                    'wrap': true
+                }
+            ],
+            'actions': [
+                {
+                    'type': 'Action.Submit',
+                    'title': 'I opt in. Go ahead',
+                    'speak': '<s>I opt in. Go ahead</s>',
+                    'data': {
+                        'type': 'medicalDataSearch'
+                    }
+                }
+            ]
+        }
+    };
+    return card;
+}
+
+function createResultCard(session) {
+
+    var card = {
+        'contentType': 'application/vnd.microsoft.card.adaptive',
+        'content': {
+            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+            'type': 'AdaptiveCard',
+            'version': '1.0',
+            'body': [
+                {
+                    'type': 'TextBlock',
+                    'text': 'Got results',
+                    'size': 'large'
+                }
+            ]
+        }
+    };
+    return card;
+}
+
+                       
 
 function greeting_card() {
 
@@ -333,7 +273,7 @@ function greeting_card() {
                                         {
                                             'type': 'TextBlock',
                                             'size': 'large',
-                                            'text': 'I am Quiggly and can help you find health tests that fit your personal profile. Just let me know.',
+                                            'text': 'I am Quiggly and can help you find a health test package that fits your personal profile. Just let me know.',
                                             'wrap': true
                                         }
                                     ]
@@ -346,29 +286,11 @@ function greeting_card() {
             ],
             'actions': [
                 {
-                    'type': 'Action.ShowCard',
-                    'title': 'Yes. I want to learn more',
+                    'type': 'Action.Submit',
+                    'title': 'Yes. I want to learn more.',
                     'speak': '<s>Yes. I want to learn more</s>',
-                    'card': {
-                        'type': 'AdaptiveCard',
-                        'body': [
-                            {
-                                'type': 'TextBlock',
-                                'size': 'large',
-                                'text': 'If you allow me to query of the medical data associated with your account, I can match your profile data against our vast data repository ...',
-                                'wrap': true
-                            }
-                        ],
-                        'actions': [
-                            {
-                                'type': 'Action.Submit',
-                                'title': 'Yes. Continue.',
-                                'speak': '<s>Yes. Continue.</s>',
-                                'data': {
-                                    'type': 'medicalDataSearch'
-                                }
-                            }
-                        ]
+                    'data': {
+                        'type': 'wantToLearnMore'
                     }
                 }
             ]
@@ -383,10 +305,13 @@ bot.on('conversationUpdate', function (message) {
         message.membersAdded.forEach(function (identity) {
             if (identity.id === message.address.bot.id) {
                 startChat(message.address);
+                __hack.address = message.address;
             }
         });
     }
 });
+
+
 
 
 
@@ -396,7 +321,7 @@ function startChat(address) {
 }
 
 
-__hack = {};
+
 
 
 function waitForData(address) {
@@ -422,6 +347,53 @@ function callCortana(address) {
         __hack.num = all.length;
         __hack.body = all;
         bot.beginDialog(address, '/data-waiting-card');
+    });
+    
+  });
+}
+
+
+// function queryCortana() {
+//     bot.beginDialog(__hack.address, '/data-received');
+
+// }
+function queryCortana(lastName) {
+    
+  var req = {
+    host: 'cortana-ai-chatbot-api.azurewebsites.net',
+    path: '/ai/api/patient/health/v1/info',
+    port: 443,
+    headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='}
+  };
+  
+  https.get(req, function (res) {
+    var data = '';
+    res.setEncoding('utf8');
+
+    res.on('data', function(body) {
+        data += body;
+    });
+
+
+    res.on('end', function() {
+        //__hack_resp = body;
+        //bot.beginDialog(address, '/');
+        var all = JSON.parse(data);
+
+        // get last names of all 
+        var lastNames = _.map(all, function(e) {
+            return e.lastName;
+        });
+        __hack.num = all.length;
+        __hack.body = JSON.stringify(lastNames);
+
+        // if there is a lastName "lastName", we are done
+        if ( _.find(all, function(e) {
+            return e.lastName.toLowerCase() == lastName.toLowerCase();
+        }) ) {
+            clearInterval(__hack.intervalId);
+            bot.beginDialog(__hack.address, '/data-received');
+        }
     });
     
   });
