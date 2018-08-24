@@ -86,6 +86,11 @@ bot.dialog('/data-received', function (session) {
     session.endDialog();
 });
 
+bot.dialog('/timeout', function (session) {       
+    session.send("Timeout");
+    session.endDialog();
+});
+
 bot.dialog('/data-waiting', function (session) {       
     session.send("Waiting for your upload ... " + __hack.num);
     session.send(__hack.body);
@@ -108,14 +113,14 @@ bot.dialog('/data-waiting-card', function (session) {
     session.send(msg);
 
     // query cortana
-    __hack.intervalId = setInterval(queryCortana, 2000, lastName);
+    __hack.intervalId = setInterval(queryCortana, 6000, lastName);
 
 });
 
 bot.dialog('/cortana-result', function (session) {  
     var card =  createResultCard(session);
     var msg = new builder.Message(session).addAttachment(card);
-    session.send(msg);
+    session.send(msg);f
     session.endDialog();
 
 });
@@ -358,6 +363,16 @@ function callCortana(address) {
 
 // }
 function queryCortana(lastName) {
+
+  __hack.cortanaCallCount = __hack.cortanaCallCount ? __hack.cortanaCallCount + 1 : 1;
+
+  if ( __hack.cortanaCallCount > 10*3) {
+      //time out
+      clearInterval(__hack.intervalId);
+      __hack.cortanaCallCount = 0;
+      bot.beginDialog(__hack.address, '/timeout');
+      return;
+  }
     
   var req = {
     host: 'cortana-ai-chatbot-api.azurewebsites.net',
