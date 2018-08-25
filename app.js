@@ -8,6 +8,8 @@ var botbuilder_azure = require("botbuilder-azure");
 var https = require('https');
 var _ = require('lodash');
 
+var $cards = require('./cards');
+
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -27,6 +29,14 @@ server.post('/api/messages', connector.listen());
 __hack_resp = undefined;
 
 __hack = {};
+
+
+// user
+var user = {
+    fhirId: '4322fec2-b90b-4618-b205-105749a0d6a0',
+    lastName: 'Smith',
+    firstName: 'John'
+};
 
 /*----------------------------------------------------------------------------------------
 * Bot Storage: This is a great spot to register the private state storage for your bot. 
@@ -53,8 +63,7 @@ bot.dialog('/', function (session) {
     }
     //session.send('You said LOCAL 3: ' + session.message.text);
 
-    
-    var card = greeting_card();
+    var card = $cards.greetingCard({firstName: user.firstName});
 
     var msg = new builder.Message(session)
         .addAttachment(card);
@@ -66,7 +75,8 @@ function processSubmitAction(session, value) {
     console.log("processSubmitAction " + value.type);
     switch (value.type) {
         case 'medicalDataSearch':
-            session.beginDialog('/data-waiting-card', value);
+            session.beginDialog('/waiting');
+            searchFhir();
             break;
 
         case 'wantToLearnMore':
@@ -84,6 +94,17 @@ bot.dialog('/data-received', function (session) {
     session.send("hack.num: " + __hack.num);
     session.send("hack.body: " + __hack.body);
     session.endDialog();
+});
+
+bot.dialog('/fhir-data-received', function (session, args, next) {
+    args = args || {};
+    var data = args.data;
+    console.log("**** data: " + JSON.stringify(data));
+    var card = $cards.patientPropertiesCard(data);
+    //console.log("**** card: " + JSON.stringify(card));
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+
 });
 
 bot.dialog('/timeout', function (session) {       
@@ -117,6 +138,14 @@ bot.dialog('/data-waiting-card', function (session) {
 
 });
 
+bot.dialog('/waiting', function (session) {  
+ 
+    var card =  $cards.progressBarCard();
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+    session.endDialog();
+});
+
 bot.dialog('/cortana-result', function (session) {  
     var card =  createResultCard(session);
     var msg = new builder.Message(session).addAttachment(card);
@@ -126,7 +155,7 @@ bot.dialog('/cortana-result', function (session) {
 });
 
 bot.dialog('/want-to-learn-more-card', function (session) {  
-    var card =  wantToLearnMoreCard(session);
+    var card =  $cards.wantToLearnMoreCard();
     var msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
     session.endDialog();
@@ -174,45 +203,6 @@ function createHeroCard(session, lastName) {
 }
 
 
-function wantToLearnMoreCard(session) {
-
-    var card = {
-        'contentType': 'application/vnd.microsoft.card.adaptive',
-        'content': {
-            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-            'type': 'AdaptiveCard',
-            'version': '1.0',
-            'body': [
-                {
-                    'type': 'TextBlock',
-                    'text': 'Great',
-                    'size': 'large'
-                },
-                {
-                    'type': 'TextBlock',
-                    'text': 'It gets better from here',
-                    'weight': 'bolder'
-                },
-                {
-                    'type': 'TextBlock',
-                    'text': 'If you allow me to query the medical data associated with your account, I can match your profile data against our vast data repository ...',
-                    'wrap': true
-                }
-            ],
-            'actions': [
-                {
-                    'type': 'Action.Submit',
-                    'title': 'I opt in. Go ahead',
-                    'speak': '<s>I opt in. Go ahead</s>',
-                    'data': {
-                        'type': 'medicalDataSearch'
-                    }
-                }
-            ]
-        }
-    };
-    return card;
-}
 
 function createResultCard(session) {
 
@@ -236,74 +226,7 @@ function createResultCard(session) {
 
                        
 
-function greeting_card() {
 
-    var card = {
-        'contentType': 'application/vnd.microsoft.card.adaptive',
-        'content': {
-            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-            'type': 'AdaptiveCard',
-            'version': '1.0',
-            'body': [
-                {
-                    'type': 'Container',
-                    'speak': '<s>Hello!</s><s>I am Quiggly and can help you find you personalized health tests. Want to you want to do?</s>',
-                    'items': [
-                        {
-                            'type': 'ColumnSet',
-                            'columns': [
-                                {
-                                    'type': 'Column',
-                                    'size': 'auto',
-                                    'items': [
-                                        {
-                                            'type': 'Image',
-                                            'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/Quiggles-CS.PNG',
-                                            'size': 'medium',
-                                            'style': 'person'
-                                        }
-                                    ]
-                                },
-                                {
-                                    'type': 'Column',
-                                    'size': 'stretch',
-                                    'items': [
-                                        {
-                                            'type': 'TextBlock',
-                                            'text': 'Hello Joann!',
-                                            'size': 'large',
-                                            'weight': 'bolder',
-                                            'isSubtle': true
-                                        },
-                                        {
-                                            'type': 'TextBlock',
-                                            'size': 'large',
-                                            'text': 'I am Quiggly and can help you find a health test package that fits your personal profile. Just let me know.',
-                                            'wrap': true
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-
-                    ]
-                }
-            ],
-            'actions': [
-                {
-                    'type': 'Action.Submit',
-                    'title': 'Yes. I want to learn more.',
-                    'speak': '<s>Yes. I want to learn more</s>',
-                    'data': {
-                        'type': 'wantToLearnMore'
-                    }
-                }
-            ]
-        }
-    };
-    return card;
-
-}
 
 bot.on('conversationUpdate', function (message) {
     if (message.membersAdded) {
@@ -356,6 +279,47 @@ function callCortana(address) {
     
   });
 }
+
+function searchFhir() {
+    var args = {
+        params: {
+            fhirId: user.fhirId
+        }
+    };
+
+    httpReqQ('patientInfo', args).then(function(response) {
+        var data = JSON.parse(response);
+        delete data.deviceToken;
+        delete data.id;
+        bot.beginDialog(__hack.address, '/fhir-data-received', {data: data});
+    });
+}
+
+//     var req = {
+//     host: 'cortana-ai-chatbot-api.azurewebsites.net',
+//     path: '/ai/api/fhir/v1/patient/4322fec2-b90b-4618-b205-105749a0d6a0',
+//     port: 443,
+//     headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='}
+//   };
+  
+//   https.get(req, function (res) {
+//     var data = '';
+//     res.setEncoding('utf8');
+
+//     res.on('data', function(body) {
+//         data += body;
+//     });
+
+
+//     res.on('end', function() {
+//         var all = JSON.parse(data);
+//         console.log("********** all: " + data);
+        
+//         bot.beginDialog(__hack.address, '/fhir-data-received', {data: all});
+//     });
+//   });
+
+
 
 
 // function queryCortana() {
@@ -413,3 +377,46 @@ function queryCortana(lastName) {
     
   });
 }
+
+
+/////////////////////////////////////////////////////////////////////
+// http requests
+var requestConfig = {
+    patientInfo: {
+         host: 'cortana-ai-chatbot-api.azurewebsites.net',
+         pathParams: ['fhirId'],
+         path: '/ai/api/fhir/v1/patient/{fhirId}',
+         port: 443,
+         headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='}
+    }
+};
+
+
+function httpReqQ(config, args) {
+
+    return new Promise(function (resolve) {
+
+        var req = _.clone(requestConfig[config]);
+
+        // iterate over request params and replace them with the args
+        _.forEach(req.pathParams, function (pathParam) {
+            req.path = req.path.replace('{' + pathParam + '}', args.params[pathParam]);
+        });
+
+        https.get(req, function (res) {
+            var data = '';
+            res.setEncoding('utf8');
+            
+            res.on('data', function(body) {
+                data += body;
+            });
+            
+            res.on('end', function() {
+                resolve(data);
+            });
+        });
+    });
+}
+        
+
+
