@@ -15,11 +15,11 @@ function greetingCard(args) {
         'content': {
             '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
             'type': 'AdaptiveCard',
+            'speak': '<s>Hello ' + args.firstName + '!</s><s>I am Quiggly and can help you find you personalized health tests. Want to you want to do?</s>',
             'version': '1.0',
             'body': [
                 {
                     'type': 'Container',
-                    'speak': '<s>Hello!</s><s>I am Quiggly and can help you find you personalized health tests. Want to you want to do?</s>',
                     'items': [
                         {
                             'type': 'ColumnSet',
