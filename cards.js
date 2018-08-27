@@ -15,7 +15,7 @@ function greetingCard(args) {
         'content': {
             '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
             'type': 'AdaptiveCard',
-            'speak': '<s>Hello ' + args.firstName + '!</s><s>I am Quiggly and can help you find you personalized health tests. Want to you want to do?</s>',
+            'speak': 'Of course I can speak. Hello ' + args.firstName + '! I am Quiggly and can help you find a health test package that fits your personal profile. Just let me know.',
             'version': '1.0',
             'body': [
                 {
