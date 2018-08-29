@@ -5,69 +5,45 @@ module.exports = {
     greetingCard: greetingCard,
     patientPropertiesCard: patientPropertiesCard,
     wantToLearnMoreCard: wantToLearnMoreCard,
-    progressBarCard: progressBarCard
+    progressBarCard: progressBarCard,
+    initiateHealthKitQueryCard: initiateHealthKitQueryCard
 };
 
 function greetingCard(args) {
+
+    var header = 'Hello ' + args.firstName + '.';
+    var text1 = 'I will use historical health data we have at Quest Diagnostics ' +
+' to build a medical profile that compares you to similar individuals.';
+
 
     var card = {
         'contentType': 'application/vnd.microsoft.card.adaptive',
         'content': {
             '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
             'type': 'AdaptiveCard',
-            'speak': 'Of course I can speak. Hello ' + args.firstName + '! I am Quiggly and can help you find a health test package that fits your personal profile. Just let me know.',
+            'speak': text1,
             'version': '1.0',
-            'body': [
+            'body': [  
                 {
-                    'type': 'Container',
-                    'items': [
-                        {
-                            'type': 'ColumnSet',
-                            'columns': [
-                                {
-                                    'type': 'Column',
-                                    'size': 'auto',
-                                    'items': [
-                                        {
-                                            'type': 'Image',
-                                            'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/Quiggles-CS.PNG',
-                                            'size': 'medium',
-                                            'style': 'person'
-                                        }
-                                    ]
-                                },
-                                {
-                                    'type': 'Column',
-                                    'size': 'stretch',
-                                    'items': [
-                                        {
-                                            'type': 'TextBlock',
-                                            'text': 'Hello ' + args.firstName + ' !',
-                                            'size': 'large',
-                                            'weight': 'bolder',
-                                            'isSubtle': true
-                                        },
-                                        {
-                                            'type': 'TextBlock',
-                                            'size': 'large',
-                                            'text': 'I am Quiggly and can help you find a health test package that fits your personal profile. Just let me know.',
-                                            'wrap': true
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-
-                    ]
-                }
+      "type": "TextBlock",
+      "text": header,
+      "size": "extraLarge",
+      "weight": "bolder"
+    },
+    {
+      "type": "TextBlock",
+      "size": "large",
+      "text": text1,
+      "wrap": true
+    }
             ],
             'actions': [
                 {
                     'type': 'Action.Submit',
-                    'title': 'Yes. I want to learn more.',
-                    'speak': '<s>Yes. I want to learn more</s>',
+                    'title': 'Sounds good. Continue.',
+                    'speak': 'Sounds good. Continue.',
                     'data': {
-                        'type': 'wantToLearnMore'
+                        'type': 'confirmedGreeting'
                     }
                 }
             ]
@@ -76,6 +52,75 @@ function greetingCard(args) {
     return card;
 
 }
+
+// function greetingCard(args) {
+
+//     var card = {
+//         'contentType': 'application/vnd.microsoft.card.adaptive',
+//         'content': {
+//             '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+//             'type': 'AdaptiveCard',
+//             'speak': 'Of course I can speak. Hello ' + args.firstName + '! I am Quiggly and can help you find a health test package that fits your personal profile. Just let me know.',
+//             'version': '1.0',
+//             'body': [
+//                 {
+//                     'type': 'Container',
+//                     'items': [
+//                         {
+//                             'type': 'ColumnSet',
+//                             'columns': [
+//                                 {
+//                                     'type': 'Column',
+//                                     'size': 'auto',
+//                                     'items': [
+//                                         {
+//                                             'type': 'Image',
+//                                             'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/04-Quiggles-CS-talk.gif',
+//                                             'size': 'medium',
+//                                             'style': 'person'
+//                                         }
+//                                     ]
+//                                 },
+//                                 {
+//                                     'type': 'Column',
+//                                     'size': 'stretch',
+//                                     'items': [
+//                                         {
+//                                             'type': 'TextBlock',
+//                                             'text': 'Hello ' + args.firstName + ' !',
+//                                             'size': 'large',
+//                                             'weight': 'bolder',
+//                                             'isSubtle': true
+//                                         },
+//                                         {
+//                                             'type': 'TextBlock',
+//                                             'size': 'large',
+//                                             'text': 'I am Quiggly and can help you find a health test package that fits your personal profile. Just let me know.',
+//                                             'wrap': true
+//                                         }
+//                                     ]
+//                                 }
+//                             ]
+//                         }
+
+//                     ]
+//                 }
+//             ],
+//             'actions': [
+//                 {
+//                     'type': 'Action.Submit',
+//                     'title': 'Yes. I want to learn more.',
+//                     'speak': '<s>Yes. I want to learn more</s>',
+//                     'data': {
+//                         'type': 'wantToLearnMore'
+//                     }
+//                 }
+//             ]
+//         }
+//     };
+//     return card;
+
+// }
 
 function wantToLearnMoreCard(data) {
 
@@ -117,12 +162,45 @@ function wantToLearnMoreCard(data) {
     return card;
 }
 
+function initiateHealthKitQueryCard() {
+
+    var textHealthKitData = 'I see that you have HealthKit enabled on your Apple device.' +
+' If you grant me access I can import this data.'
+
+    var card = {
+        'contentType': 'application/vnd.microsoft.card.adaptive',
+        'content': {
+            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+            'type': 'AdaptiveCard',
+            'version': '1.0',
+            'body': [
+                {
+                    'type': 'TextBlock',
+                    'text': textHealthKitData,
+                    'weight': 'bolder',
+                    'wrap': true
+                }
+            ],
+            'actions': [
+                {
+                    'type': 'Action.Submit',
+                    'title': 'Sure. Send me an authorization request',
+                    'data': {
+                        'type': 'initiateHealthKitQuery'
+                    }
+                }
+            ]
+        }
+    };
+    return card;
+}
+
 function patientPropertiesCard(data) {
 
     var keys = [
       {
           "type": "TextBlock",
-          "text": "Key",
+          "text": "Bio Marker",
           "isSubtle": true,
           "weight": "bolder"
       }];
@@ -175,8 +253,14 @@ var card = {
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
   "version": "1.0",
-  "speak": "patient data.",
   "body": [
+      {
+      "type": "TextBlock",
+      "text": "I could retrieve the following data from our records.",
+      "size": "medium",
+      "weight": "bolder",
+      "wrap": true
+    },
     {
       "type": "ColumnSet",
       "separator": true,
@@ -205,7 +289,7 @@ var card = {
     return card;
 }
 
-function progressBarCard() {
+function progressBarCard(args) {
    var card = {
         'contentType': 'application/vnd.microsoft.card.adaptive',
         'content': {
@@ -215,8 +299,15 @@ function progressBarCard() {
             
             'body': [
                 {
+      "type": "TextBlock",
+      "text": args.msg,
+      "size": "medium",
+      "weight": "bolder",
+      "wrap": true
+    },
+                {
                     'type': 'Image',
-                    'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/light_progress2.gif'
+                    'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/load2.gif'
                 }
             ]
                        

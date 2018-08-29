@@ -31,6 +31,7 @@ __hack_resp = undefined;
 __hack = {};
 
 
+
 // user
 var user = {
     fhirId: '4322fec2-b90b-4618-b205-105749a0d6a0',
@@ -74,14 +75,21 @@ function processSubmitAction(session, value) {
     var defaultErrorMessage = 'Please complete all the search parameters';
     console.log("processSubmitAction " + value.type);
     switch (value.type) {
-        case 'medicalDataSearch':
-            session.beginDialog('/waiting');
+        case 'initiateHealthKitQuery':
+            session.beginDialog('/initiateHealthKitQuery');
+            break;
+
+        // case 'medicalDataSearch':
+        //     session.beginDialog('/waiting', {msg: '1 Querying your health data.'});
+        //     searchFhir();
+        //     break;
+
+        case 'confirmedGreeting':
+            session.beginDialog('/waiting', {msg: 'Querying your health data.'});
             searchFhir();
             break;
 
-        case 'wantToLearnMore':
-            session.beginDialog('/want-to-learn-more-card', value);
-            break;
+        
 
         default:
             // A form data was received, invalid or incomplete since the previous validation did not pass
@@ -103,7 +111,35 @@ bot.dialog('/fhir-data-received', function (session, args, next) {
     var card = $cards.patientPropertiesCard(data);
     //console.log("**** card: " + JSON.stringify(card));
     var msg = new builder.Message(session).addAttachment(card);
+    // session.send("calling healthkit endpoint: " + data.deviceToken);
     session.send(msg);
+
+    card = $cards.initiateHealthKitQueryCard(data);
+    msg = new builder.Message(session).addAttachment(card);
+    // session.send("calling healthkit endpoint: " + data.deviceToken);
+    session.send(msg);
+    session.endDialog();
+
+
+});
+
+bot.dialog('/initiateHealthKitQuery', function (session, args, next) {
+    
+
+     var args = {
+        params: {
+            deviceToken: user.fhirData.deviceToken
+        }
+    };
+
+    //session.send("xxxx querying health kit for token: " + args.params);
+
+    httpReqQ('callHealthKit', args).then(function(response) {
+        //session.send("xxxx callHealthKit resolved: " + response);
+
+        bot.beginDialog(__hack.address, '/data-waiting-card');
+    });
+
 
 });
 
@@ -118,41 +154,50 @@ bot.dialog('/data-waiting', function (session) {
     session.endDialog();
 });
 
-bot.dialog('/data-waiting-card', function (session) {  
 
-    // generate random name
-    var num = Math.floor(Math.random() * Math.floor(1000));
-    var lastName = "Smith" + num;
-
-    
-    var card =  createHeroCard(session, lastName);
+bot.dialog('/healthKit-data-received', function (session, args) {       
+    console.log("**** data: " + JSON.stringify(args));
+    var data = _.omit(args, ['deviceToken', 'id']);
+    var card = $cards.patientPropertiesCard(data);
     var msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
-    //session.endDialog();
-
-    msg = "Waiting until you have posted a patient record with lastName '" + lastName + "' to the /ai/api/patient/health/v1/info endpoint";
-    session.send(msg);
-
-    // query cortana
-    __hack.intervalId = setInterval(queryCortana, 6000, lastName);
-
 });
 
-bot.dialog('/waiting', function (session) {  
+bot.dialog('/healthKit-data-waiting', function (session) {       
+    session.send("Still waiting for healthkit data ... " );
+    session.endDialog();
+});
+
  
-    var card =  $cards.progressBarCard();
+
+bot.dialog('/data-waiting-card', function (session) {  
+    var card =  $cards.progressBarCard({msg: 'Waiting for your Apple HealthKit upload'});
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+    session.endDialog();
+
+    // pollHealthKit
+    var args = {
+        params: {
+            fhirId: user.fhirId
+        }
+    };
+    var f = function() {
+        pollHealthKit(args);
+    }
+    __hack.intervalId = setInterval(f, 6000);
+
+});
+
+bot.dialog('/waiting', function (session, args) {  
+ 
+    console.log("**** argsmsg: " + args.msg);
+    var card =  $cards.progressBarCard(args);
     var msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
     session.endDialog();
 });
 
-bot.dialog('/cortana-result', function (session) {  
-    var card =  createResultCard(session);
-    var msg = new builder.Message(session).addAttachment(card);
-    session.send(msg);f
-    session.endDialog();
-
-});
 
 bot.dialog('/want-to-learn-more-card', function (session) {  
     var card =  $cards.wantToLearnMoreCard();
@@ -160,72 +205,6 @@ bot.dialog('/want-to-learn-more-card', function (session) {
     session.send(msg);
     session.endDialog();
 });
-
-function createAnimationCard(session) {
-    return new builder.AnimationCard(session)
-        .title('Microsoft Bot Framework')
-        .subtitle('Animation Card')
-        .image(builder.CardImage.create(session, 'https://docs.microsoft.com/en-us/bot-framework/media/how-it-works/architecture-resize.png'))
-        .media([
-            { url: 'https://teama1storage.blob.core.windows.net/scratchbot-85a/light_progress2.gif' }
-        ]);
-}
-
-function createAdaptiveCard(session) {
-   var card = {
-        'contentType': 'application/vnd.microsoft.card.adaptive',
-        'content': {
-            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-            'type': 'AdaptiveCard',
-            'version': '1.0',
-            
-            'body': [
-                {
-                    'type': 'ImageSet',
-                    'images': [
-                        {
-                            'type': 'Image',
-                            'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/light_progress2.gif'
-                        }
-                    ]
-                }]
-        }
-                           
-   };
-   return card;
-}
-
-function createHeroCard(session, lastName) {
-    return new builder.HeroCard(session)
-        .images([
-            builder.CardImage.create(session, 'https://teama1storage.blob.core.windows.net/scratchbot-85a/light_progress2.gif')
-        ]);
-}
-
-
-
-function createResultCard(session) {
-
-    var card = {
-        'contentType': 'application/vnd.microsoft.card.adaptive',
-        'content': {
-            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-            'type': 'AdaptiveCard',
-            'version': '1.0',
-            'body': [
-                {
-                    'type': 'TextBlock',
-                    'text': 'Got results',
-                    'size': 'large'
-                }
-            ]
-        }
-    };
-    return card;
-}
-
-                       
-
 
 
 bot.on('conversationUpdate', function (message) {
@@ -289,8 +268,8 @@ function searchFhir() {
 
     httpReqQ('patientInfo', args).then(function(response) {
         var data = JSON.parse(response);
-        delete data.deviceToken;
-        delete data.id;
+        user.fhirData = data;
+        data = _.pick(data, ['lastName', 'firstName', 'city', 'state', 'zip', 'height', 'weight']);
         bot.beginDialog(__hack.address, '/fhir-data-received', {data: data});
     });
 }
@@ -322,11 +301,11 @@ function searchFhir() {
 
 
 
-// function queryCortana() {
+// function pollHealthKit() {
 //     bot.beginDialog(__hack.address, '/data-received');
 
 // }
-function queryCortana(lastName) {
+function pollHealthKit(args) {
 
   __hack.cortanaCallCount = __hack.cortanaCallCount ? __hack.cortanaCallCount + 1 : 1;
 
@@ -337,45 +316,15 @@ function queryCortana(lastName) {
       bot.beginDialog(__hack.address, '/timeout');
       return;
   }
-    
-  var req = {
-    host: 'cortana-ai-chatbot-api.azurewebsites.net',
-    path: '/ai/api/patient/health/v1/info',
-    port: 443,
-    headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='}
-  };
-  
-  https.get(req, function (res) {
-    var data = '';
-    res.setEncoding('utf8');
 
-    res.on('data', function(body) {
-        data += body;
+  httpReqQ('pollHealthKit', args).then(function(response) {
+      console.log("xxxx response: " + response);
+      var data = JSON.parse(response);
+      if ( data.healthKitStatus ) {
+        clearInterval(__hack.intervalId);
+        bot.beginDialog(__hack.address, '/healthKit-data-received', data);
+      } 
     });
-
-
-    res.on('end', function() {
-        //__hack_resp = body;
-        //bot.beginDialog(address, '/');
-        var all = JSON.parse(data);
-
-        // get last names of all 
-        var lastNames = _.map(all, function(e) {
-            return e.lastName;
-        });
-        __hack.num = all.length;
-        __hack.body = JSON.stringify(lastNames);
-
-        // if there is a lastName "lastName", we are done
-        if ( _.find(all, function(e) {
-            return e.lastName.toLowerCase() == lastName.toLowerCase();
-        }) ) {
-            clearInterval(__hack.intervalId);
-            bot.beginDialog(__hack.address, '/data-received');
-        }
-    });
-    
-  });
 }
 
 
@@ -387,7 +336,35 @@ var requestConfig = {
          pathParams: ['fhirId'],
          path: '/ai/api/fhir/v1/patient/{fhirId}',
          port: 443,
-         headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='}
+         headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='},
+         method: 'GET'
+    },
+
+    callHealthKit: {
+         host: 'cortana-ai-chatbot-api.azurewebsites.net',
+         pathParams: ['deviceToken'],
+         path: '/ai/api/device/v1/shareHealthKit/{deviceToken}',
+         port: 443,
+         headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='},
+         method: 'POST'
+    },
+
+    pollHealthKit: {
+         host: 'cortana-ai-chatbot-api.azurewebsites.net',
+         pathParams: ['fhirId'],
+         path: '/ai/api/patient/health/v1/info/{fhirId}',
+         port: 443,
+         headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='},
+         method: 'GET'
+    },
+
+    callPredictiveAnalysis: {
+         host: 'cortana-ai-chatbot-api.azurewebsites.net',
+         pathParams: ['fhirId'],
+         path: '/ai/api/predictive/v1/nafld/{fhirId}',
+         port: 443,
+         headers: {'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ=='},
+         method: 'GET'
     }
 };
 
@@ -415,7 +392,8 @@ function httpReqQ(config, args) {
                 resolve(data);
             });
         });
-    });
+        
+       });
 }
         
 
