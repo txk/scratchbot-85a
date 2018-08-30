@@ -55,6 +55,18 @@ var inMemoryStorage = new builder.MemoryBotStorage();
 var bot = new builder.UniversalBot(connector);
 bot.set('storage', inMemoryStorage);
 
+
+function spacer(session) {
+    var msg = new builder.Message(session)
+        .addAttachment({
+            contentUrl: 'https://teama1storage.blob.core.windows.net/scratchbot-85a/spacer.png',
+            contentType: 'image/png',
+            name: 'BotFrameworkOverview.png'
+        });
+
+    session.send(msg);
+}
+
 bot.dialog('/', function (session) {
 
     if (session.message && session.message.value) {
@@ -64,12 +76,28 @@ bot.dialog('/', function (session) {
     }
     //session.send('You said LOCAL 3: ' + session.message.text);
 
+    var card = $cards.quiggles({header: 'Hello there, John.'});
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+
+    var f = function() {
+        greetingContinue(session);
+    };
+
+    setTimeout(f, 2000);
+
+    
+});
+
+function greetingContinue(session) {
     var card = $cards.greetingCard({firstName: user.firstName});
 
     var msg = new builder.Message(session)
         .addAttachment(card);
     session.send(msg);
-});
+}
+
+
 
 function processSubmitAction(session, value) {
     var defaultErrorMessage = 'Please complete all the search parameters';
@@ -108,6 +136,34 @@ bot.dialog('/fhir-data-received', function (session, args, next) {
     args = args || {};
     var data = args.data;
     console.log("**** data: " + JSON.stringify(data));
+
+    // show Quiggles
+    var card = $cards.quiggles({header: 'I DID IT!'});
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+
+    var f = function() {
+        fhirDataReceivedContinue(session, data);
+    };
+
+    setTimeout(f, 3000);
+
+    //spacer(session);
+    // card = $cards.patientPropertiesCard(data);
+    // //console.log("**** card: " + JSON.stringify(card));
+    // msg = new builder.Message(session).addAttachment(card);
+    // // session.send("calling healthkit endpoint: " + data.deviceToken);
+    // session.send(msg);
+
+    // card = $cards.initiateHealthKitQueryCard(data);
+    // msg = new builder.Message(session).addAttachment(card);
+    // // session.send("calling healthkit endpoint: " + data.deviceToken);
+    // session.send(msg);
+    // session.endDialog();
+});
+
+function fhirDataReceivedContinue(session, data) {
+
     var card = $cards.patientPropertiesCard(data);
     //console.log("**** card: " + JSON.stringify(card));
     var msg = new builder.Message(session).addAttachment(card);
@@ -119,9 +175,7 @@ bot.dialog('/fhir-data-received', function (session, args, next) {
     // session.send("calling healthkit endpoint: " + data.deviceToken);
     session.send(msg);
     session.endDialog();
-
-
-});
+}
 
 bot.dialog('/initiateHealthKitQuery', function (session, args, next) {
     
@@ -161,6 +215,21 @@ bot.dialog('/healthKit-data-received', function (session, args) {
     var card = $cards.patientPropertiesCard(data);
     var msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
+
+    // make a call to predictive analysis
+    // var body = _.clone(user.fhirData);
+    // body['patientUID'] = body.id;
+
+    var args = {
+        params: {
+            fhirId: user.fhirId
+        }
+    };
+    httpReqQ('callPredictiveAnalysis', args).then(function(response) {
+        session.send("xxxx callPredictiveAnalysis resolved: " + response);
+    });
+
+
 });
 
 bot.dialog('/healthKit-data-waiting', function (session) {       
@@ -321,6 +390,7 @@ function pollHealthKit(args) {
       console.log("xxxx response: " + response);
       var data = JSON.parse(response);
       if ( data.healthKitStatus ) {
+        user.fhirData = _.clone(data);
         clearInterval(__hack.intervalId);
         bot.beginDialog(__hack.address, '/healthKit-data-received', data);
       } 
@@ -358,6 +428,18 @@ var requestConfig = {
          method: 'GET'
     },
 
+    callPredictiveAnalysisOld: {
+         host: 'cortana-ai-chatbot-api.azurewebsites.net',
+         pathParams: [],
+         path: '/ai/api/predictive/v1/nafld',
+         port: 443,
+         headers: {
+             'Authorization': 'Basic Y29ydGFuYTpQQHNzdzByZDEwMQ==',
+             'Content-type': 'application/json'
+         },
+         method: 'POST'
+    },
+
     callPredictiveAnalysis: {
          host: 'cortana-ai-chatbot-api.azurewebsites.net',
          pathParams: ['fhirId'],
@@ -380,7 +462,14 @@ function httpReqQ(config, args) {
             req.path = req.path.replace('{' + pathParam + '}', args.params[pathParam]);
         });
 
-        https.get(req, function (res) {
+        var body = undefined;
+        // a body, if one is provided
+        if ( args.params && args.params.body) {
+            body = JSON.stringify(args.params.body);
+            console.log("Req. body: " + body);
+        }
+
+        var r = https.get(req, function (res) {
             var data = '';
             res.setEncoding('utf8');
             
@@ -392,6 +481,11 @@ function httpReqQ(config, args) {
                 resolve(data);
             });
         });
+
+        // if ( body ) {
+        //     r.write();
+        //     r.end();
+        // }
         
        });
 }

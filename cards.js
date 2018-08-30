@@ -6,14 +6,62 @@ module.exports = {
     patientPropertiesCard: patientPropertiesCard,
     wantToLearnMoreCard: wantToLearnMoreCard,
     progressBarCard: progressBarCard,
-    initiateHealthKitQueryCard: initiateHealthKitQueryCard
+    initiateHealthKitQueryCard: initiateHealthKitQueryCard,
+    quiggles: quiggles
 };
+
+function quiggles(args) {
+
+    var bodyBlocks = [];
+    var block;
+    if ( args.header ) {
+
+        block = {
+            "type": "TextBlock",
+            "text": args.header,
+            "size": "extraLarge",
+            "weight": "bolder"
+        };
+        bodyBlocks.push(block);
+    }
+
+    if ( args.text ) {
+
+        block = {
+            "type": "TextBlock",
+            "text": args.text,
+            "size": "large"
+        };
+        bodyBlocks.push(block);
+    }
+
+    block = {
+        'type': 'Image',
+        'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/03-Quiggles-CS-tilt-eyeClosed.png'
+    };
+
+    bodyBlocks.push(block);
+
+
+    var card = {
+        'contentType': 'application/vnd.microsoft.card.adaptive',
+        'content': {
+            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+            'type': 'AdaptiveCard',
+            'version': '1.0',
+            'body': bodyBlocks
+        }
+    };
+    return card;
+}
+
+    
 
 function greetingCard(args) {
 
-    var header = 'Hello ' + args.firstName + '.';
-    var text1 = 'I will use historical health data we have at Quest Diagnostics ' +
-' to build a medical profile that compares you to similar individuals.';
+    var header = 'Hello there ' + args.firstName + '.';
+    var text1 = 'Let me do a search in our data repository to build a medical profile that allows me to compare you to similar individuals.';
+    var text2 = 'Is that OK with you?';
 
 
     var card = {
@@ -24,16 +72,17 @@ function greetingCard(args) {
             'speak': text1,
             'version': '1.0',
             'body': [  
-                {
-      "type": "TextBlock",
-      "text": header,
-      "size": "extraLarge",
-      "weight": "bolder"
-    },
+                
     {
       "type": "TextBlock",
       "size": "large",
       "text": text1,
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "size": "large",
+      "text": text2,
       "wrap": true
     }
             ],
@@ -178,6 +227,7 @@ function initiateHealthKitQueryCard() {
                     'type': 'TextBlock',
                     'text': textHealthKitData,
                     'weight': 'bolder',
+                    'size': 'medium',
                     'wrap': true
                 }
             ],
