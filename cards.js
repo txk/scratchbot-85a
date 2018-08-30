@@ -30,7 +30,8 @@ function quiggles(args) {
         block = {
             "type": "TextBlock",
             "text": args.text,
-            "size": "large"
+            "size": "large",
+            "wrap": true
         };
         bodyBlocks.push(block);
     }
@@ -255,10 +256,24 @@ function initiateHealthKitQueryCard() {
 
 function patientPropertiesCard(data) {
 
+    var cats = {
+        "lastName": "Smart/FHIR",
+        "firstName": "Smart/FHIR",
+        "city": "Smart/FHIR",
+        "state": "Smart/FHIR",
+        "zip": "Smart/FHIR",
+        "height": "Smart/FHIR",
+        "weight": "Smart/FHIR"
+    };
+
+    function cat(k) {
+        return cats[k] ? "Smart/FHIR" : "HealthKit"
+    }
+
     var keys = [
       {
           "type": "TextBlock",
-          "text": "Bio Marker",
+          "text": "Data Point",
           "isSubtle": true,
           "weight": "bolder"
       }];
@@ -296,7 +311,7 @@ function patientPropertiesCard(data) {
 
         entry = {
             "type": "TextBlock",
-            "text": "Smart/FHIR",
+            "text": cat(key),
             "spacing": "small"
         };
         sources.push(entry);

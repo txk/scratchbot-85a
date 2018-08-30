@@ -216,21 +216,52 @@ bot.dialog('/healthKit-data-received', function (session, args) {
     var msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
 
+    var f = function() {
+        healthKitDataReceivedContinue(session);
+    };
+
+    var card =  $cards.progressBarCard({msg: 'Running predictive Analysis'});
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+
+    setTimeout(f, 4000);
+
     // make a call to predictive analysis
     // var body = _.clone(user.fhirData);
     // body['patientUID'] = body.id;
 
+    // var args = {
+    //     params: {
+    //         fhirId: user.fhirId
+    //     }
+    // };
+    // httpReqQ('callPredictiveAnalysis', args).then(function(response) {
+    //     var text = "And here is proof that I actually got some live predictive data: " + response;
+    //     var card = $cards.quiggles({header: 'I AM DONE!', text: text, img: 'blinking'});
+    //     var msg = new builder.Message(session).addAttachment(card);
+    //     session.send(msg);
+    //     //session.send("xxxx callPredictiveAnalysis resolved: " + response);
+    // });
+
+
+
+
+});
+
+function healthKitDataReceivedContinue(session) {
     var args = {
         params: {
             fhirId: user.fhirId
         }
     };
     httpReqQ('callPredictiveAnalysis', args).then(function(response) {
-        session.send("xxxx callPredictiveAnalysis resolved: " + response);
+        var text = "And here is proof that I actually got some live predictive data: " + response;
+        var card = $cards.quiggles({header: 'I AM DONE!', text: text, img: 'blinking'});
+        var msg = new builder.Message(session).addAttachment(card);
+        session.send(msg);
+        //session.send("xxxx callPredictiveAnalysis resolved: " + response);
     });
-
-
-});
+}
 
 bot.dialog('/healthKit-data-waiting', function (session) {       
     session.send("Still waiting for healthkit data ... " );
