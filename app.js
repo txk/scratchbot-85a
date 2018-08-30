@@ -76,7 +76,7 @@ bot.dialog('/', function (session) {
     }
     //session.send('You said LOCAL 3: ' + session.message.text);
 
-    var card = $cards.quiggles({header: 'Hello there, John.'});
+    var card = $cards.quiggles({header: 'Hello there, John.', img: 'blinking'});
     var msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
 
@@ -138,7 +138,7 @@ bot.dialog('/fhir-data-received', function (session, args, next) {
     console.log("**** data: " + JSON.stringify(data));
 
     // show Quiggles
-    var card = $cards.quiggles({header: 'I DID IT!'});
+    var card = $cards.quiggles({header: 'I DID IT!', img: 'eyeClosed'});
     var msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
 

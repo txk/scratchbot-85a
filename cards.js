@@ -35,9 +35,17 @@ function quiggles(args) {
         bodyBlocks.push(block);
     }
 
+    var quigglesImages = {
+        'eyeClosed': '03-Quiggles-CS-tilt-eyeClosed.png',
+        'blinking': '07-Quiggles-CoolWink4.gif'
+    };
+    var url = quigglesImages[args.img];
+    url = 'https://teama1storage.blob.core.windows.net/scratchbot-85a/' + url;
+
     block = {
         'type': 'Image',
-        'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/03-Quiggles-CS-tilt-eyeClosed.png'
+        'url': url,
+        'size': 'large'
     };
 
     bodyBlocks.push(block);
