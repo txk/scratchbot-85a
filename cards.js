@@ -220,6 +220,7 @@ function wantToLearnMoreCard(data) {
     return card;
 }
 
+/* initiateHealthKitQueryCard */
 function initiateHealthKitQueryCard() {
 
     var textHealthKitData = 'I see that you have HealthKit enabled on your Apple device.' +
@@ -232,6 +233,11 @@ function initiateHealthKitQueryCard() {
             'type': 'AdaptiveCard',
             'version': '1.0',
             'body': [
+                {
+        'type': 'Image',
+        'url': 'https://teama1storage.blob.core.windows.net/scratchbot-85a/iOS-8-Health-3.jpg',
+        'size': 'large'
+    },
                 {
                     'type': 'TextBlock',
                     'text': textHealthKitData,
