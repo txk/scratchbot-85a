@@ -211,18 +211,23 @@ bot.dialog('/data-waiting', function (session) {
 
 bot.dialog('/healthKit-data-received', function (session, args) {       
     console.log("**** data: " + JSON.stringify(args));
-    var data = _.omit(args, ['deviceToken', 'id']);
-    var card = $cards.patientPropertiesCard(data);
+
+    var card = $cards.quiggles({header: 'Thanks!', text: 'I imported your Apple HealthKit data.', img: 'blinking'});
     var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+
+    var data = _.omit(args, ['deviceToken', 'id']);
+    card = $cards.patientPropertiesCard(data);
+    msg = new builder.Message(session).addAttachment(card);
     session.send(msg);
 
     var f = function() {
         healthKitDataReceivedContinue(session);
     };
 
-    var card =  $cards.progressBarCard({msg: 'Running predictive Analysis'});
-    var msg = new builder.Message(session).addAttachment(card);
-    session.send(msg);
+    // var card =  $cards.progressBarCard({msg: 'Running predictive Analysis'});
+    // var msg = new builder.Message(session).addAttachment(card);
+    // session.send(msg);
 
     setTimeout(f, 4000);
 
@@ -249,18 +254,43 @@ bot.dialog('/healthKit-data-received', function (session, args) {
 });
 
 function healthKitDataReceivedContinue(session) {
+
+    var card =  $cards.progressBarCard({msg: 'Running predictive Analysis'});
+    var msg = new builder.Message(session).addAttachment(card);
+    session.send(msg);
+
     var args = {
         params: {
             fhirId: user.fhirId
         }
     };
     httpReqQ('callPredictiveAnalysis', args).then(function(response) {
-        var text = "And here is proof that I actually got some live predictive data: " + response;
-        var card = $cards.quiggles({header: 'I AM DONE!', text: text, img: 'blinking'});
+        //var text = "And here is proof that I actually got some live predictive data: " + response;
+        var card = $cards.quiggles({header: 'I AM DONE!', img: 'blinking'});
         var msg = new builder.Message(session).addAttachment(card);
         session.send(msg);
+
+        console.log("xxxx callPredictiveAnalysis resolved: " + response);
+        var data = JSON.parse(response);
+        delete data.patientUID;
+        card = $cards.predictiveResultsCard(data);
+        msg = new builder.Message(session).addAttachment(card);
+        session.send(msg);
         //session.send("xxxx callPredictiveAnalysis resolved: " + response);
+
+        var f = function() {
+          finish(session, data);
+        };
+
+        setTimeout(f, 2000);
     });
+}
+
+
+function finish(session) {
+  var card = $cards.quiggles({header: 'Bye Now.', text: 'Look on the website for more details.', img: 'blinking'});
+  var msg = new builder.Message(session).addAttachment(card);
+  session.send(msg);
 }
 
 bot.dialog('/healthKit-data-waiting', function (session) {       

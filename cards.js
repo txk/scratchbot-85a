@@ -7,7 +7,8 @@ module.exports = {
     wantToLearnMoreCard: wantToLearnMoreCard,
     progressBarCard: progressBarCard,
     initiateHealthKitQueryCard: initiateHealthKitQueryCard,
-    quiggles: quiggles
+    quiggles: quiggles,
+    predictiveResultsCard: predictiveResultsCard
 };
 
 function quiggles(args) {
@@ -72,13 +73,15 @@ function greetingCard(args) {
     var text1 = 'Let me do a search in our data repository to build a medical profile that allows me to compare you to similar individuals.';
     var text2 = 'Is that OK with you?';
 
+    var speech = 'I am Quiggles and of course I can talk. However, I will shut up now to not disturb the presentation';
+
 
     var card = {
         'contentType': 'application/vnd.microsoft.card.adaptive',
         'content': {
             '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
             'type': 'AdaptiveCard',
-            'speak': text1,
+            'speak': speech,
             'version': '1.0',
             'body': [  
                 
@@ -224,7 +227,7 @@ function wantToLearnMoreCard(data) {
 function initiateHealthKitQueryCard() {
 
     var textHealthKitData = 'I see that you have HealthKit enabled on your Apple device.' +
-' If you grant me access I can import this data.'
+' If you grant me access I can import your data.'
 
     var card = {
         'contentType': 'application/vnd.microsoft.card.adaptive',
@@ -394,5 +397,68 @@ function progressBarCard(args) {
                            
    };
    return card;
+}
+
+
+function predictiveResultsCard(data) {
+
+    var keys = [];
+    var values = [];
+
+    _.forOwn(data, function(value, key)  {
+        var entry = {
+            "type": "TextBlock",
+            "text": "" + key,
+            "spacing": "medium"
+        };
+        keys.push(entry);
+
+        entry = {
+            "type": "TextBlock",
+            "text": "" + value,
+            "spacing": "medium"
+        };
+        values.push(entry);
+
+    });
+
+    
+
+
+var card = {
+        'contentType': 'application/vnd.microsoft.card.adaptive',
+        'content': {
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.0",
+  "body": [
+      {
+      "type": "TextBlock",
+      "text": "Our predictive Analysis service found the following results.",
+      "size": "medium",
+      "weight": "bolder",
+      "wrap": true
+    },
+    {
+      "type": "ColumnSet",
+      "separator": true,
+      "spacing": "medium",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "stretch",
+          "items": keys
+        },
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": values
+        }
+      ]
+    }
+  ]
+}};
+
+    return card;
 }
 
